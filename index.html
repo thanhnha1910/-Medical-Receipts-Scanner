@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical Receipt Scanner</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 2rem;
+      }
+
+      .config-section {
+        background: #f8f9ff;
+        border: 1px solid #e0e6ff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .config-section h3 {
+        color: #667eea;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .config-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .config-item label {
+        font-weight: 600;
+        color: #333;
+        min-width: 120px;
+      }
+
+      .config-item input[type="url"] {
+        flex: 1;
+        min-width: 300px;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .config-item input[type="url"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn-test {
+        background: #2ecc71;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-test:hover {
+        background: #27ae60;
+        transform: translateY(-1px);
+      }
+
+      .btn-test:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .upload-section {
+        border: 3px dashed #667eea;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        background: #f8f9ff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+      }
+
+      .upload-section:hover {
+        background: #f0f2ff;
+        border-color: #764ba2;
+      }
+
+      .upload-section.dragover {
+        background: #e8ebff;
+        border-color: #764ba2;
+        transform: scale(1.02);
+      }
+
+      #fileInput {
+        display: none;
+      }
+
+      .upload-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+
+      .selected-files {
+        margin: 2rem 0;
+      }
+
+      .file-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .file-item {
+        position: relative;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        background: white;
+      }
+
+      .file-item img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+      }
+
+      .file-item .filename {
+        font-size: 0.8rem;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .file-item .remove {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0;
+      }
+
+      button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-process {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-process:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-process:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-clear {
+        background: #f1f1f1;
+        color: #333;
+      }
+
+      .btn-clear:hover {
+        background: #e0e0e0;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .loading.active {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .results {
+        display: none;
+        margin-top: 2rem;
+      }
+
+      .results.active {
+        display: block;
+      }
+
+      .results h2 {
+        color: #667eea;
+        margin-bottom: 1rem;
+      }
+
+      .stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .stat-card {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .stat-card .value {
+        font-size: 2rem;
+        font-weight: bold;
+      }
+
+      .stat-card .label {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+      }
+
+      .results-table {
+        overflow-x: auto;
+        margin-top: 1rem;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+
+      th {
+        background: #667eea;
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      tr:hover {
+        background: #f8f9ff;
+      }
+
+      .download-btn {
+        background: #2ecc71;
+        color: white;
+        margin-top: 1rem;
+      }
+
+      .download-btn:hover {
+        background: #27ae60;
+      }
+
+      .error {
+        background: #ff4757;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .error.active {
+        display: block;
+      }
+
+      .cdn-status {
+        background: #f39c12;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        display: none;
+        text-align: center;
+      }
+
+      .cdn-status.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📋 Medical Receipt Scanner</h1>
+        <p>Upload medical receipts to extract data automatically</p>
+      </div>
+
+      <div class="content">
+        <!-- CDN Status -->
+        <div class="cdn-status" id="cdnStatus">
+          ⚠️ Loading Excel library... If this takes too long, please refresh the page.
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="config-section">
+          <h3>⚙️ Configuration</h3>
+          <div class="config-item">
+            <label for="webhookUrl">Webhook URL:</label>
+            <input
+              type="url"
+              id="webhookUrl"
+              placeholder="Enter your n8n webhook URL"
+              value="https://nhaquachne.app.n8n.cloud/webhook/medical-receipt-upload"
+            />
+            <button class="btn-test" id="testBtn">🔗 Test Connection</button>
+          </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadZone">
+          <div class="upload-icon">📤</div>
+          <h3>Click to upload or drag and drop</h3>
+          <p>Supports: JPG, PNG, PDF (multiple files allowed)</p>
+          <input type="file" id="fileInput" accept="image/*,.pdf" multiple />
+        </div>
+
+        <!-- Selected Files -->
+        <div class="selected-files" id="selectedFiles" style="display: none">
+          <h3>📎 Selected Files (<span id="fileCount">0</span>)</h3>
+          <div class="file-list" id="fileList"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+          <button class="btn-process" id="processBtn" disabled>
+            🚀 Process Documents
+          </button>
+          <button class="btn-clear" id="clearBtn">🗑️ Clear All</button>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="errorMsg"></div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Processing your documents...</p>
+          <p id="loadingDetails">
+            This will wait until n8n processing is complete
+          </p>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+          <h2>✅ Extraction Results</h2>
+
+          <div class="stats">
+            <div class="stat-card">
+              <div class="value" id="statTime">0s</div>
+              <div class="label">Processing Time</div>
+            </div>
+            <div class="stat-card">
+              <div class="value" id="statRecords">0</div>
+              <div class="label">Records Extracted</div>
+            </div>
+          </div>
+
+          <div class="results-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date of Payment</th>
+                  <th>Payee</th>
+                  <th>Department/Remarks</th>
+                  <th>Receipt Number</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </div>
+
+          <button class="download-btn" id="downloadBtn" style="display: none">
+            ⬇️ Download Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load XLSX library with fallback -->
+    <script>
+      // Load XLSX library with multiple CDN fallbacks
+      function loadXLSX() {
+        const cdnUrls = [
+          'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+          'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+        ];
+
+        let currentIndex = 0;
+        const cdnStatus = document.getElementById('cdnStatus');
+        cdnStatus.classList.add('active');
+
+        function tryLoadScript() {
+          if (currentIndex >= cdnUrls.length) {
+            cdnStatus.innerHTML = '❌ Failed to load Excel library. Some features may not work.';
+            cdnStatus.style.background = '#e74c3c';
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = cdnUrls[currentIndex];
+          
+          script.onload = function() {
+            cdnStatus.classList.remove('active');
+            console.log('XLSX library loaded successfully from:', cdnUrls[currentIndex]);
+          };
+          
+          script.onerror = function() {
+            console.warn('Failed to load XLSX from:', cdnUrls[currentIndex]);
+            currentIndex++;
+            tryLoadScript();
+          };
+          
+          document.head.appendChild(script);
+        }
+
+        tryLoadScript();
+      }
+
+      // Start loading XLSX
+      loadXLSX();
+    </script>
+
+    <script>
+      let selectedFiles = [];
+      let excelBlob = null;
+
+      // No timeout - wait indefinitely for n8n response
+
+      async function fetchWithoutTimeout(resource, options = {}) {
+        // Simple fetch without any timeout - wait indefinitely
+        return await fetch(resource, options);
+      }
+
+      // DOM Elements
+      const uploadZone = document.getElementById("uploadZone");
+      const fileInput = document.getElementById("fileInput");
+      const selectedFilesDiv = document.getElementById("selectedFiles");
+      const fileList = document.getElementById("fileList");
+      const fileCount = document.getElementById("fileCount");
+      const processBtn = document.getElementById("processBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const loading = document.getElementById("loading");
+      const results = document.getElementById("results");
+      const errorMsg = document.getElementById("errorMsg");
+      const resultsBody = document.getElementById("resultsBody");
+      const statTime = document.getElementById("statTime");
+      const statRecords = document.getElementById("statRecords");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const webhookUrlInput = document.getElementById("webhookUrl");
+      const testBtn = document.getElementById("testBtn");
+
+      // Load saved webhook URL from localStorage
+      const savedWebhookUrl = localStorage.getItem("webhookUrl");
+      if (savedWebhookUrl) {
+        webhookUrlInput.value = savedWebhookUrl;
+      }
+
+      // Save webhook URL to localStorage when changed
+      webhookUrlInput.addEventListener("input", () => {
+        localStorage.setItem("webhookUrl", webhookUrlInput.value);
+      });
+
+      // Click to upload
+      uploadZone.addEventListener("click", () => fileInput.click());
+
+      // File selection
+      fileInput.addEventListener("change", (e) => {
+        handleFiles(e.target.files);
+      });
+
+      // Drag and drop
+      uploadZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadZone.classList.add("dragover");
+      });
+
+      uploadZone.addEventListener("dragleave", () => {
+        uploadZone.classList.remove("dragover");
+      });
+
+      uploadZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove("dragover");
+        handleFiles(e.dataTransfer.files);
+      });
+
+      // Handle selected files
+      function handleFiles(files) {
+        selectedFiles = Array.from(files);
+        displayFiles();
+        processBtn.disabled = selectedFiles.length === 0;
+      }
+
+      // Display selected files
+      function displayFiles() {
+        if (selectedFiles.length === 0) {
+          selectedFilesDiv.style.display = "none";
+          return;
+        }
+
+        selectedFilesDiv.style.display = "block";
+        fileCount.textContent = selectedFiles.length;
+        fileList.innerHTML = "";
+
+        selectedFiles.forEach((file, index) => {
+          const fileItem = document.createElement("div");
+          fileItem.className = "file-item";
+
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(file);
+          img.alt = file.name;
+
+          const filename = document.createElement("div");
+          filename.className = "filename";
+          filename.textContent = file.name;
+
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "remove";
+          removeBtn.textContent = "×";
+          removeBtn.onclick = () => removeFile(index);
+
+          fileItem.appendChild(removeBtn);
+          fileItem.appendChild(img);
+          fileItem.appendChild(filename);
+          fileList.appendChild(fileItem);
+        });
+      }
+
+      // Remove file
+      function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        displayFiles();
+        processBtn.disabled = selectedFiles.length === 0;
+      }
+
+      // Clear all
+      clearBtn.addEventListener("click", () => {
+        selectedFiles = [];
+        fileInput.value = "";
+        displayFiles();
+        processBtn.disabled = true;
+        results.classList.remove("active");
+        errorMsg.classList.remove("active");
+      });
+
+      // Show error
+      function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.classList.add("active");
+        setTimeout(() => {
+          errorMsg.classList.remove("active");
+        }, 5000);
+      }
+
+      // Process documents
+      processBtn.addEventListener("click", async () => {
+        if (selectedFiles.length === 0) return;
+
+        // Get webhook URL from input
+        const webhookUrl = webhookUrlInput.value.trim();
+        if (!webhookUrl) {
+          showError("Please enter a webhook URL");
+          return;
+        }
+
+        // Validate URL format
+        if (!isValidUrl(webhookUrl)) {
+          showError("Please enter a valid webhook URL");
+          return;
+        }
+
+        // Reset UI
+        errorMsg.classList.remove("active");
+        results.classList.remove("active");
+        loading.classList.add("active");
+
+        const startTime = Date.now();
+
+        try {
+          // Create FormData
+          const formData = new FormData();
+          selectedFiles.forEach((file) => {
+            formData.append("files", file);
+          });
+
+          // Send to n8n webhook without timeout - wait indefinitely
+          const response = await fetchWithoutTimeout(
+            webhookUrl,
+            { method: "POST", body: formData }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const contentType = response.headers.get("content-type");
+
+          if (
+            contentType &&
+            contentType.includes("application/vnd.openxmlformats")
+          ) {
+            // Excel file received -> parse and show directly
+            if (typeof XLSX === 'undefined') {
+              throw new Error('Excel library not loaded. Please refresh the page and try again.');
+            }
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+            const normalized = rawRows.map(normalizeRecordFromExcel);
+            displayResults(normalized, startTime);
+          } else {
+            // JSON response
+            const data = await response.json();
+            displayResults(data, startTime);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showError(`Failed to process documents: ${error.message}`);
+          loading.classList.remove("active");
+        }
+      });
+
+      // Display results
+      function displayResults(data, startTime) {
+        loading.classList.remove("active");
+        results.classList.add("active");
+
+        // Calculate time
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        statTime.textContent = `${elapsed}s`;
+        statRecords.textContent = Array.isArray(data) ? data.length : 0;
+
+        // Populate table
+        resultsBody.innerHTML = "";
+        if (Array.isArray(data)) {
+          data.forEach((record) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${record.date_of_payment || "N/A"}</td>
+                        <td>${record.payee || "N/A"}</td>
+                        <td>${record.department_remarks || "N/A"}</td>
+                        <td>${record.receipt_number || "N/A"}</td>
+                        <td>${record.amount || "0.00"}</td>
+                    `;
+            resultsBody.appendChild(row);
+          });
+        }
+      }
+
+      // Normalize Excel row to expected fields
+      function normalizeRecordFromExcel(row) {
+        // Lowercase keys for fuzzy matching
+        const lower = Object.fromEntries(
+          Object.entries(row).map(([k, v]) => [
+            String(k).toLowerCase().trim(),
+            v,
+          ])
+        );
+
+        const pick = (keywords) => {
+          for (const kw of keywords) {
+            for (const key in lower) {
+              if (key.includes(kw)) return lower[key];
+            }
+          }
+          return "";
+        };
+
+        return {
+          date_of_payment: pick([
+            "date",
+            "payment",
+            "date_of_payment",
+            "date_of_pay",
+          ]),
+          payee: pick(["payee", "payer", "name"]),
+          department_remarks: pick(["department", "remarks", "dept", "remark"]),
+          receipt_number: pick(["receipt", "invoice", "number", "no"]),
+          amount: pick(["amount", "total", "sum"]),
+        };
+      }
+
+      // Download Excel (hidden)
+      downloadBtn.addEventListener("click", () => {
+        if (!excelBlob) {
+          showError("No Excel file available. Please process documents first.");
+          return;
+        }
+
+        const url = URL.createObjectURL(excelBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `medical_receipts_${Date.now()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // URL validation function
+      function isValidUrl(string) {
+        try {
+          const url = new URL(string);
+          return url.protocol === "http:" || url.protocol === "https:";
+        } catch (_) {
+          return false;
+        }
+      }
+
+      // Test webhook connection
+      testBtn.addEventListener("click", async () => {
+        const webhookUrl = webhookUrlInput.value.trim();
+
+        if (!webhookUrl) {
+          showError("Please enter a webhook URL first");
+          return;
+        }
+
+        if (!isValidUrl(webhookUrl)) {
+          showError("Please enter a valid webhook URL");
+          return;
+        }
+
+        testBtn.disabled = true;
+        testBtn.textContent = "🔄 Testing...";
+
+        try {
+          // Test with a simple GET request first
+          const response = await fetch(webhookUrl, {
+            method: "GET",
+            mode: "no-cors", // Allow cross-origin requests
+          });
+
+          testBtn.textContent = "✅ Connection OK";
+          testBtn.style.background = "#27ae60";
+          
+          setTimeout(() => {
+            testBtn.textContent = "🔗 Test Connection";
+            testBtn.style.background = "#2ecc71";
+            testBtn.disabled = false;
+          }, 3000);
+
+        } catch (error) {
+          console.error("Connection test error:", error);
+          
+          // Try a different approach for CORS-restricted endpoints
+          try {
+            await fetch(webhookUrl, {
+              method: "POST",
+              mode: "no-cors",
+              body: new FormData()
+            });
+            
+            testBtn.textContent = "✅ Connection OK";
+            testBtn.style.background = "#27ae60";
+          } catch (secondError) {
+            testBtn.textContent = "❌ Test Failed";
+            testBtn.style.background = "#e74c3c";
+            showError(
+              `❌ Connection test failed. Please check your webhook URL.`
+            );
+          }
+
+          setTimeout(() => {
+            testBtn.textContent = "🔗 Test Connection";
+            testBtn.style.background = "#2ecc71";
+            testBtn.disabled = false;
+          }, 3000);
+        }
+      });
+    </script>
+  </body>
+</html>
